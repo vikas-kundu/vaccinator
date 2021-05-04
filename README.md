@@ -60,7 +60,7 @@ Password of the sender to connect to SMTP server for sending email(Default=cowin
 ```sh
 python3 vaccinator.py -p 110003 -d 09-05-2021
 python3 vaccinator.py -p 110003 -a 24 -e user@example.com
-python3 vaccinator.py -p 110003 -a 24 -e user@example.com -smtp-server smtp.gmail.com --sender-email username@gmail.com --sender-pass my_gmail_password
+python3 vaccinator.py -p 110003 -a 24 -e user@example.com --smtp-server smtp.gmail.com --sender-email username@gmail.com --sender-pass my_gmail_password
 python3 vaccinator.py -w 
 ```
 ## ⚠️ Warning ⚠️
