@@ -28,7 +28,7 @@ Vaccinator requires Python3 and pip3 to run. To use the script, download it and 
 ```sh
 git clone https://github.com/vikas-kundu/vaccinator
 cd vaccinator
-pip3 -r requirements.txt
+pip3 install -r requirements.txt
 python3 vaccinator.py -h
 ```
 ## Usage 
