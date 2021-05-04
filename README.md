@@ -20,7 +20,7 @@ Vaccinator requires Python3 to work and contains only two modules outside the st
 - py-notifier (0.2.0)
 - requests (2.25.1)
 
-The data is retrieved using the open public APIS at [API Setu](https://apisetu.gov.in/public/marketplace/api/cowin)
+The data is retrieved using the open public APIS at [API Setu](https://apisetu.gov.in/public/marketplace/api/cowin). It works on both Linux and Windows.
 
 ## Installation
 
