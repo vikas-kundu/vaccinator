@@ -213,7 +213,7 @@ def repeater(args):
     messages = ''
     run = vaccinator(search_args)
     data = run.search_by_pin()
-    if data == {args['pincode']:[]}:
+    if data == {args['pincode']:[]} or not data:
         print(f"No slots found for pincode {args['pincode']}")
         return ''
 
