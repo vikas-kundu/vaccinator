@@ -1,12 +1,13 @@
 # Vaccinator
 ## _Hasta La Vista Corona_
-![Alt Text](https://github.com/vikas-kundu/vaccinator/blob/main/usage.gif)
 Vaccinator is a python script to find open slots for vaccination in India based on pincode (or multiple pincodes). This script will recheck after every few minutes and as soon the slots open, inform you via
 - Beeping sound
 - Desktop notification
 - Email (optional)
 
 Since India has started the vaccination drive for those above 18 years of age, there is a heavy rush and slots get booked soon. This script will come in handy for finding those slots as soon as they open.
+
+![Alt Text](https://github.com/vikas-kundu/vaccinator/blob/main/usage.gif)
 
 ## Features
 
