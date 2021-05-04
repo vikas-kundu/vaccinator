@@ -31,6 +31,12 @@ cd vaccinator
 pip3 install -r requirements.txt
 python3 vaccinator.py -h
 ```
+## Updating:
+```sh
+cd vaccinator
+git pull
+```
+
 ## Usage 
 #### Options:
 #####  -h, --help
