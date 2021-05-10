@@ -1,6 +1,6 @@
 # Vaccinator
 ## _Hasta La Vista Corona_
-Vaccinator is a python script to find open slots for vaccination in India based on pincode (or multiple pincodes). This script will recheck after every few minutes and as soon the slots open, inform you via
+Vaccinator is a python script to find open slots for vaccination in India based on pincode (or multiple pincodes) or state and district. This script will recheck after every few minutes and as soon the slots open, inform you via
 - Beeping sound
 - Desktop notification
 - Email (optional)
@@ -51,6 +51,10 @@ Date from which to start looking(Format=DD-MM-YYYY).
 For calling using user friendly interface for beginners.
 #####  -e, --email 
 Email on which to notify when slots are available.
+#####  -s, --state 
+State in which to find open slots.
+#####  -t, --district 
+District of the state to find open slots.
 #####  -i, --interval 
 Interval in seconds after which to recheck the slots(Default=300) i.e. 5 minutes.
 #####  --port 
@@ -65,6 +69,7 @@ Password of the sender to connect to SMTP server for sending email(Default=cowin
 #### Examples:
 ```sh
 python3 vaccinator.py -p 110003 -d 09-05-2021
+python3 vaccinator.py -s haryana -d sonipat
 python3 vaccinator.py -p 110003 -a 24 -e user@example.com
 python3 vaccinator.py -p 110003 -a 24 -e user@example.com --smtp-server smtp.gmail.com --sender-email username@gmail.com --sender-pass my_gmail_password
 python3 vaccinator.py -w 
