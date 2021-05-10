@@ -83,6 +83,12 @@ def parse():
     parser.add_argument('-i', '--interval', metavar='Interval', type=int, required=False, default=300, \
     help='Interval in seconds after which to recheck the slots(Default=300).')
 
+    parser.add_argument('-s', '--state', metavar='State', type=str, required=False, \
+    help='Interval in seconds after which to recheck the slots(Default=300).')
+
+    parser.add_argument('-t', '--district', metavar='District', type=str, required=False, \
+    help='Interval in seconds after which to recheck the slots(Default=300).')
+
     parser.add_argument('--port', metavar='Port', type=int, required=False, default=PORT, \
     help=f'Port of the SMTP server(Default={PORT})')
 
@@ -96,15 +102,15 @@ def parse():
     help=f'Password of the sender to connect to SMTP server for sending email(Default={SENDER_PASS}) !Avoid using default due to security issues!')
 
     args = vars(parser.parse_args())
-    if not args['pincode'] and not args['wizard']:
-        error('Select either --pincode with value or use --wizard', 'critical')
+    if not args['state'] and not args['pincode'] and not args['wizard']:
+        error('Select either --pincode with value or --state with district or use --wizard', 'critical')
     elif not re.search(r"\d{2}\-\d{2}\-\d{4}", args['date']):
         error(f"Date {args['date']} is not in DD-MM-YYYY format", 'critical')
     return args
 
 def wizard():
     global SMTP_SERVER, PORT, SENDER_EMAIL, SENDER_PASS
-    output = {'pincode': [], 'age': 18, 'date': date.today().strftime('%d-%m-%Y'), 'email': '', 'interval': 300, 'smtp_server': SMTP_SERVER, 'port': PORT, 'sender_email': SENDER_EMAIL, 'sender_pass': SENDER_PASS}
+    output = {'pincode': [], 'age': 18, 'date': date.today().strftime('%d-%m-%Y'), 'email': '', 'state': '', 'district': '', 'interval': 300, 'smtp_server': SMTP_SERVER, 'port': PORT, 'sender_email': SENDER_EMAIL, 'sender_pass': SENDER_PASS}
     print('\nEnter the answer to following questions as asked. If you don\'t know any, skip it, the default value will be used.\
     \nHowever, don\'t skip the pincode which is crucial. Also, make sure to enter the email if you wish to be informed when slot is open!\n')
     
@@ -112,6 +118,8 @@ def wizard():
     output['age'] = str(input('Enter user age i.e. 23 (Default=18):')) or output['age']
     output['date'] = str(input(f"Enter date in DD-MM-YYYY format i.e. 01-02-2021 (Default={output['date']}):")) or output['date']
     output['email'] = str(input('Enter email address to send message when slots found:')) or output['email']
+    output['state'] = str(input('Enter state (skip if using pincode):')) or output['state']
+    output['district'] = str(input('Enter district (skip if using pincode):')) or output['district']
     output['interval'] = str(input('Enter interval in which to scan in seconds (Default=300):')) or output['interval']
     output['smtp_server'] = str(input(f'Enter the address of SMTP Server to use for sending emails(Default={SMTP_SERVER}) !Avoid using default due to security issues!:')) or output['smtp_server']
     output['port'] = str(input(f'Enter the port of SMTP server(Default={PORT}):')) or output['port']
@@ -130,6 +138,9 @@ class vaccinator:
         self.pincode = args['pincode']
         self.age = int(args['age'])
         self.date = args['date']
+        self.state = args['state']
+        self.district = args['district']
+        
 
     def detect(self, data):
         output = {self.pincode: []}
@@ -146,14 +157,45 @@ class vaccinator:
         debug(output, 'detect')
         return output
 
-    def search_by_state():
-        # Will add in future
-        pass
+    def search_by_state(self):
+        hdrs={'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"}
+        did = state_id = 0
+        res = district_data = ''
+        states = { 'andaman and nicobar islands': 1, 'andhra pradesh': 2, 'arunachal pradesh': 3, 'assam': 4, 'bihar': 5, 'chandigarh': 6, 'chhattisgarh': 7, 'dadra and nagar haveli': 8, 'daman and diu': 37, 'delhi': 9, 'goa': 10, 'gujarat': 11, 'haryana': 12, 'himachal pradesh': 13, 'jammu and kashmir': 14, 'jharkhand': 15, 'karnataka': 16, 'kerala': 17, 'ladakh': 18, 'lakshadweep': 19, 'madhya pradesh': 20, 'maharashtra': 21, 'manipur': 22, 'meghalaya': 23, 'mizoram': 24, 'nagaland': 25, 'odisha': 26, 'puducherry': 27, 'punjab': 28, 'rajasthan': 29, 'sikkim': 30, 'tamil nadu': 31, 'telangana': 32, 'tripura': 33, 'uttar pradesh': 34, 'uttarakhand': 35, 'west bengal': 36 }
+        try:
+            state_id = states[self.state.lower()]
+        except KeyError:
+            error('State invalid')
+            return ''
+
+        fetch_districts_url = f"https://cdn-api.co-vin.in/api/v2/admin/location/districts/{state_id}"
+        try:
+            res = r.get(fetch_districts_url, headers=hdrs)
+        except Exception as e:
+            error(f"Error while fetching district list\n{e}")
+            return ''
+        district_data = res.json()
+        for district in district_data['districts']:
+            if district['district_name'].lower() == self.district.lower():
+                did = district['district_id']
+        if did == 0:
+            error('District not found!!')
+            return ''
+        statewise_url = f"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByDistrict?district_id={did}&date={self.date}"
+        try:
+            res = r.get(statewise_url, headers=hdrs)
+        except Exception as e:
+            error(f"Error while fetching statewise data\n{e}")
+            return ''
+
+        debug(json.dumps(res.json(), indent = 1), 'search_by_state')
+        return self.detect(res.json())
 
     def search_by_pin(self):
+        hdrs={'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"}
         url = f"https://cdn-api.co-vin.in/api/v2/appointment/sessions/public/calendarByPin?pincode={self.pincode}&date={self.date}"
         try:
-            res = r.get(url)
+            res = r.get(url, headers=hdrs)
         except Exception as e:
             error(e)
         else:
@@ -207,26 +249,27 @@ Subject: Some slots have opened up which are as follows:
 ######## Alert functions end ########
 
 
+
 def repeater(args):
-    search_args = dict(list(args.items())[:3])
+    location_type = ''
     data = {}
     messages = ''
-    run = vaccinator(search_args)
-    data = run.search_by_pin()
-    if data == {args['pincode']:[]} or not data:
-        print(f"No slots found for pincode {args['pincode']}")
-        return ''
+    run = vaccinator(args)
+    if args['state']:
+        location_type = f"State: {args['state']}, District: {args['district']}" 
+        data = run.search_by_state()
+    if args['pincode']:
+        location_type = f"Pincode: {args['pincode']}"
+        data = run.search_by_pin()
 
+    if data == {args['pincode']:[]} or not data:
+        print(f"No slots found for {location_type}")
+        return ''
     sequence = 1
     for i in data[args['pincode']]:
         messages += f"\n{sequence}. Date: {i[1]}\n   Location: {i[0]}\n   Slots: {i[2]}"
         sequence += 1
-    messages = f"***Available at Pincode: {args['pincode']}***{messages}"
-    if messages:
-        print(messages)
-        notification(f"{sequence-1} slots available at Pincode: {args['pincode']}. Check terminal for detailed info.")
-        if args['email']:
-            send_email(args, messages)
+    messages = f"***Available at {location_type}***{messages}"
     return messages
 
 def main():
@@ -237,20 +280,28 @@ def main():
     # Infinite loop
     counter = 1
     pins = all_args['pincode']
-    found = ''
     while True:
-        print(f"\n[Time: {datetime.now().strftime('%H:%M:%S')}]============================ Try: {counter} =========================")
-        for pin in pins :
-            all_args['pincode'] = pin # To send single pin instead of list
+        print(f"\n[Time: {datetime.now().strftime('%H:%M:%S')}]  Try: [{counter}]")
+        found = ''
+        if pins:
+            for pin in pins :
+                all_args['pincode'] = pin # To send single pin instead of list
+                found += repeater(all_args)
+        else:
             found += repeater(all_args)
-        print(f"[Time: {datetime.now().strftime('%H:%M:%S')}]==============================================================\n")
 
         if found: # Script will keep beeping while waiting if slots are found
+            ############ All alerts #################
+            print(found)
+            if all_args['email']:
+                send_email(all_args, found)
             print('Info: Slots have been found. Exit the program to stop the beeping sound')
+            notification(f"Slots available at State: {all_args['state']} or Pincode: {all_args['pincode']}. Check terminal for detailed info.")
             for _ in range(1,int(all_args['interval'])):
                 sys.stdout.write('\a')
                 sys.stdout.flush()
                 time.sleep(1)
+            ############ All alerts end ################
         else:
             print(f"Info: Going to sleep for {int(all_args['interval'])/60} minutes till next try.")
             time.sleep(int(all_args['interval']))
