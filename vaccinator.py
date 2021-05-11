@@ -46,6 +46,8 @@ SMTP_SERVER = 'danwin1210.me'
 PORT = 587
 SENDER_EMAIL = 'cowininfo-2021@danwin1210.me'
 SENDER_PASS = 'cowininfo-2021'
+BOT_TOKEN = ''
+BOT_CHAT_ID = ''
 
 ######### Util functions #########
 def debug(data, name):
@@ -188,8 +190,16 @@ class vaccinator:
             error(f"Error while fetching statewise data\n{e}")
             return ''
 
-        debug(json.dumps(res.json(), indent = 1), 'search_by_state')
-        return self.detect(res.json())
+        if res.status_code != 200:
+            error('Response code not ok')
+            return ''
+        try:
+            debug(json.dumps(res.json(), indent = 1), 'search_by_state')
+        except Exception as e:
+            error('JSON decode error')
+        else:
+            return self.detect(res.json())
+        return ''
 
     def search_by_pin(self):
         hdrs={'User-Agent': "Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:88.0) Gecko/20100101 Firefox/88.0"}
@@ -199,8 +209,16 @@ class vaccinator:
         except Exception as e:
             error(e)
         else:
-            debug(json.dumps(res.json(), indent = 1), 'search_by_pin')
-            return self.detect(res.json())
+            if res.status_code != 200:
+                error('Response code not ok')
+                return ''
+            try:
+                debug(json.dumps(res.json(), indent = 1), 'search_by_pin')
+            except Exception as e:
+                error('JSON decoder error')
+            else:
+                return self.detect(res.json())
+        return ''
 
 ######## Class ends #############
 
@@ -246,9 +264,23 @@ Subject: Some slots have opened up which are as follows:
     except Exception as e:
         error(f"{e}\nUnable to send email.")
         server.quit()
+
+def telegram_bot_sendtext(message):
+    global SENT_MAIL_QUEUE, BOT_TOKEN, BOT_CHAT_ID
+    if message in SENT_MAIL_QUEUE:
+        error('This Telegram message is already sent so skipping it')
+        return ''
+    else:
+        SENT_MAIL_QUEUE.add(message)
+    send_text = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={BOT_CHAT_ID}&parse_mode=Markdown&text={message}"
+    try:
+        res = r.get(send_text)
+    except Exception as e:
+        error(f"Error while sending telegram message {e}")
+    else:
+        return res.json()
+
 ######## Alert functions end ########
-
-
 
 def repeater(args):
     location_type = ''
@@ -293,6 +325,7 @@ def main():
         if found: # Script will keep beeping while waiting if slots are found
             ############ All alerts #################
             print(found)
+            telegram_bot_sendtext(found)
             if all_args['email']:
                 send_email(all_args, found)
             print('Info: Slots have been found. Exit the program to stop the beeping sound')
