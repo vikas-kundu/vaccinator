@@ -37,7 +37,7 @@ from datetime import datetime
 
 # Not part of standard lib
 import requests as r
-from pynotifier import Notification
+from plyer import notification
 
 # Global vars
 DEBUG = False
@@ -229,14 +229,12 @@ class vaccinator:
 ######## Class ends #############
 
 ######## Alert functions ########    
-def notification(data):
-    Notification(
-        title='vaccinator Slots Found!',
-    	description=data,
-    	duration=3,                              # Duration in seconds
-    	urgency='normal'
-    ).send()
-    time.sleep(4) # Sleeping to avoid toast errors caused by continous calling before earlier request is over
+def desktop_notification(data):
+    notification.notify(
+        title = "Sample Notification",
+        message = data,
+        timeout = 10
+        )
 
 def send_email(args, data):
     global SENT_MAIL_QUEUE
@@ -341,7 +339,7 @@ def main():
             if all_args['email']:
                 send_email(all_args, found)
             print('Info: Slots have been found. Exit the program to stop the beeping sound')
-            notification(f"Slots available at State: {all_args['state']} or Pincode: {all_args['pincode']}. Check terminal for detailed info.")
+            desktop_notification(f"Slots available at State: {all_args['state']} or Pincode: {all_args['pincode']}. Check terminal for detailed info.")
             for _ in range(1,int(all_args['interval'])):
                 sys.stdout.write('\a')
                 sys.stdout.flush()
