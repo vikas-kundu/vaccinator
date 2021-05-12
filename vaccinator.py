@@ -284,7 +284,7 @@ def telegram_bot_sendtext(args, message):
         return ''
     else:
         SENT_TELEGRAM_QUEUE.add(message)
-    send_text = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={BOT_CHAT_ID}&parse_mode=Markdown&text={message}"
+    send_text = f"https://api.telegram.org/bot{args['bot_token']}/sendMessage?chat_id={args['bot_chatid']}&parse_mode=Markdown&text={message}"
     try:
         res = r.get(send_text)
     except Exception as e:
