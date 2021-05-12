@@ -43,12 +43,7 @@ from pynotifier import Notification
 DEBUG = False
 SENT_MAIL_QUEUE = set()
 SENT_TELEGRAM_QUEUE = set()
-SMTP_SERVER = 'danwin1210.me'
 PORT = 587
-SENDER_EMAIL = 'cowininfo-2021@danwin1210.me'
-SENDER_PASS = 'cowininfo-2021'
-BOT_TOKEN = ''
-BOT_CHAT_ID = ''
 
 ######### Util functions #########
 def debug(data, name):
@@ -57,7 +52,8 @@ def debug(data, name):
 
 def error(err, err_type='normal'):
     if err_type == 'critical':
-        print(f"Error: {err}\nExiting the program...")
+        print(f"Error: {err}")
+        input('Press any key to exit...')
         sys.exit()
     else:
         print(f"Error: {err}")
@@ -95,40 +91,49 @@ def parse():
     parser.add_argument('--port', metavar='Port', type=int, required=False, default=PORT, \
     help=f'Port of the SMTP server(Default={PORT})')
 
-    parser.add_argument('--smtp-server', metavar='Smtp Server', type=str, required=False, default=SMTP_SERVER, \
-    help=f'SMTP Server address to use for sending email.(Default={SMTP_SERVER}) !Avoid using default due to security issues!')
+    parser.add_argument('--smtp-server', metavar='Smtp Server', type=str, required=False,  \
+    help=f'SMTP Server address to use for sending email.')
 
-    parser.add_argument('--sender-email', metavar='Sender email', type=str, required=False, default=SENDER_EMAIL, \
-    help=f'Email of the sender to connect to SMTP server for sending email(Default={SENDER_EMAIL}) !Avoid using default due to security issues!')
+    parser.add_argument('--sender-email', metavar='Sender email', type=str, required=False,  \
+    help=f'Email of the sender to connect to SMTP server for sending email.')
 
-    parser.add_argument('--sender-pass', metavar='Sender pass', type=str, required=False, default=SENDER_PASS, \
-    help=f'Password of the sender to connect to SMTP server for sending email(Default={SENDER_PASS}) !Avoid using default due to security issues!')
+    parser.add_argument('--sender-pass', metavar='Sender pass', type=str, required=False,  \
+    help=f'Password of the sender to connect to SMTP server for sending email.')
+
+    parser.add_argument('--bot-token', metavar='Telegram bot token', type=str, required=False, \
+    help=f'Token of the telegram bot to send messsages.')
+
+    parser.add_argument('--bot-chatid', metavar='Telegram bot chatid', type=str, required=False, \
+    help=f'Chat ID of the telegram bot to send messages.')
 
     args = vars(parser.parse_args())
     if not args['state'] and not args['pincode'] and not args['wizard']:
-        error('Select either --pincode with value or --state with district or use --wizard', 'critical')
+        error('Neither --pincode, nor --state with --district entered. So calling wizard...')
+        args['wizard'] = True
     elif not re.search(r"\d{2}\-\d{2}\-\d{4}", args['date']):
         error(f"Date {args['date']} is not in DD-MM-YYYY format", 'critical')
     return args
 
 def wizard():
     global SMTP_SERVER, PORT, SENDER_EMAIL, SENDER_PASS
-    output = {'pincode': [], 'age': 18, 'date': date.today().strftime('%d-%m-%Y'), 'email': '', 'state': '', 'district': '', 'interval': 300, 'smtp_server': SMTP_SERVER, 'port': PORT, 'sender_email': SENDER_EMAIL, 'sender_pass': SENDER_PASS}
-    print('\nEnter the answer to following questions as asked. If you don\'t know any, skip it, the default value will be used.\
-    \nHowever, don\'t skip the pincode which is crucial. Also, make sure to enter the email if you wish to be informed when slot is open!\n')
-    
-    output['pincode'] = str(input('Enter single or multiple picodes separated by space i.e. 1234 1235 1236:')).split(' ') or output['pincode']
-    output['age'] = str(input('Enter user age i.e. 23 (Default=18):')) or output['age']
-    output['date'] = str(input(f"Enter date in DD-MM-YYYY format i.e. 01-02-2021 (Default={output['date']}):")) or output['date']
-    output['email'] = str(input('Enter email address to send message when slots found:')) or output['email']
+    output = {'pincode': [], 'age': 18, 'date': date.today().strftime('%d-%m-%Y'), 'email': '', 'state': '', 'district': '', 'interval': 300, \
+              'smtp_server': '', 'port': PORT, 'sender_email': '', 'sender_pass': '', 'bot_token': '', 'bot_chatid': ''}
+    print('\nEnter the answer to following questions as asked. If you don\'t know any, skip it by pressing Enter, the default value will be used.\
+    \nAlso, make sure to enter the email if you wish to be informed when slot is open!\n')
+
+    output['pincode'] = str(input('Enter single or multiple picodes separated by space i.e. 1234 1235 1236 (Skip if wish to search by state and district):')).split(' ') or output['pincode']
     output['state'] = str(input('Enter state (skip if using pincode):')) or output['state']
     output['district'] = str(input('Enter district (skip if using pincode):')) or output['district']
-    output['interval'] = str(input('Enter interval in which to scan in seconds (Default=300):')) or output['interval']
-    output['smtp_server'] = str(input(f'Enter the address of SMTP Server to use for sending emails(Default={SMTP_SERVER}) !Avoid using default due to security issues!:')) or output['smtp_server']
+    output['age'] = str(input('Enter user age i.e. 23 (Default=18):')) or output['age']
+    output['date'] = str(input(f"Enter date in DD-MM-YYYY format i.e. 01-02-2021. It is advised to use default date so press Enter(Default={output['date']}):")) or output['date']
+    output['email'] = str(input('Enter email address to send message when slots found:')) or output['email']
+    output['interval'] = str(input('Enter interval in which to scan cowin website in seconds (Default=300):')) or output['interval']
+    output['smtp_server'] = str(input(f'Enter the address of SMTP Server to use for sending emails:')) or output['smtp_server']
     output['port'] = str(input(f'Enter the port of SMTP server(Default={PORT}):')) or output['port']
-    output['sender_email'] = str(input(f'Enter the email to connect to the SMTP Server for sending emails(Default={SENDER_EMAIL}) !Avoid using default due to security issues!:')) or output['sender_email']
-    output['sender_pass'] = str(input(f'Enter the password to connect to the SMTP Server for sending emails(Default={SENDER_PASS}) !Avoid using default due to security issues!:')) or output['sender_pass']
-    
+    output['sender_email'] = str(input(f'Enter the email to connect to the SMTP Server for sending emails:')) or output['sender_email']
+    output['sender_pass'] = str(input(f'Enter the password to connect to the SMTP Server for sending emails:')) or output['sender_pass']
+    output['bot_token'] = str(input(f'Enter the Telegram bot token to send messages:')) or output['bot_token']
+    output['bot_chatid'] = str(input(f'Enter the Telegram bot chat ID to send messages')) or output['bot_chatid']
     if not re.search(r"\d{2}\-\d{2}\-\d{4}", output['date']):
         error(f"Date {output['date']} is not in DD-MM-YYYY format", 'critical')
     return output
@@ -238,6 +243,9 @@ def send_email(args, data):
     if not args['email']:
         error('No email found to send slot info')
         return ''
+    if not args['smtp_server'] or not args['sender_email'] or not args['sender_pass']:
+        error('Email options not set properly, cannot send mail')
+        return ''
     if data in SENT_MAIL_QUEUE:
         error('Email already sent so skipping it')
         return ''
@@ -266,8 +274,11 @@ Subject: Some slots have opened up which are as follows:
         error(f"{e}\nUnable to send email.")
         server.quit()
 
-def telegram_bot_sendtext(message):
-    global SENT_TELEGRAM_QUEUE, BOT_TOKEN, BOT_CHAT_ID
+def telegram_bot_sendtext(args, message):
+    global SENT_TELEGRAM_QUEUE
+    if not args['bot_token'] or not args['bot_chatid']:
+        error('Telegram bot options not set properly, cannot send telegram message')
+        return ''
     if message in SENT_TELEGRAM_QUEUE:
         error('This Telegram message is already sent so skipping it')
         return ''
@@ -310,9 +321,9 @@ def main():
     all_args = wizard() if parse()['wizard'] else parse()
     debug(all_args, 'main')
     
-    # Infinite loop
     counter = 1
     pins = all_args['pincode']
+    # Infinite loop
     while True:
         print(f"\n[Time: {datetime.now().strftime('%H:%M:%S')}]  Try: [{counter}]")
         found = ''
@@ -326,7 +337,7 @@ def main():
         if found: # Script will keep beeping while waiting if slots are found
             ############ All alerts #################
             print(found)
-            telegram_bot_sendtext(found)
+            telegram_bot_sendtext(all_args, found)
             if all_args['email']:
                 send_email(all_args, found)
             print('Info: Slots have been found. Exit the program to stop the beeping sound')
@@ -345,4 +356,5 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        error('User aborted!', 'critical')
+        print('\nUser Aborted')
+        sys.exit()
