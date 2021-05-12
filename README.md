@@ -4,6 +4,7 @@ Vaccinator is a python script to find open slots for vaccination in India based 
 - Beeping sound
 - Desktop notification
 - Email (optional)
+- Telegram Bot (optional)
 
 Since India has started the vaccination drive for those above 18 years of age, there is a heavy rush and slots get booked soon. This script will come in handy for finding those slots as soon as they open.
 
@@ -65,6 +66,10 @@ SMTP Server address to use for sending email.(Default=danwin1210.me) !Avoid usin
 Email of the sender to connect to SMTP server for sending email(Default=cowininfo-2021@danwin1210.me) !Avoid using default due to security issues!
 #####  --sender-pass 
 Password of the sender to connect to SMTP server for sending email(Default=cowininfo-2021) !Avoid using default due to security issues!
+#####  --bot-token 
+Token of the telegram bot to send messages.
+#####  --bot-chatid
+Chat id of the telegram bot to send messages.
 
 #### Examples:
 ```sh
@@ -74,12 +79,6 @@ python3 vaccinator.py -p 110003 -a 24 -e user@example.com
 python3 vaccinator.py -p 110003 -a 24 -e user@example.com --smtp-server smtp.gmail.com --sender-email username@gmail.com --sender-pass my_gmail_password
 python3 vaccinator.py -w 
 ```
-## ⚠️ Warning ⚠️
-This script has some hardcoded SMTP credentials. If you can see them, so can anyone else. This can cause some security concerns. So, use your own gmail or any other email provider account to send emails. Provide your own credentials via the following options:
-- --smtp-server
-- --sender-email
-- --sender-pass
-- --port(optional)
 
 See usage examples for more info.
 ## License
