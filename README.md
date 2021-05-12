@@ -61,11 +61,11 @@ Interval in seconds after which to recheck the slots(Default=300) i.e. 5 minutes
 #####  --port 
 Port of the SMTP server(Default=587)
 #####  --smtp-server
-SMTP Server address to use for sending email.(Default=danwin1210.me) !Avoid using default due to security issues!
+SMTP Server address to use for sending email.
 #####  --sender-email
-Email of the sender to connect to SMTP server for sending email(Default=cowininfo-2021@danwin1210.me) !Avoid using default due to security issues!
+Email of the sender to connect to SMTP server for sending email.
 #####  --sender-pass 
-Password of the sender to connect to SMTP server for sending email(Default=cowininfo-2021) !Avoid using default due to security issues!
+Password of the sender to connect to SMTP server for sending email.
 #####  --bot-token 
 Token of the telegram bot to send messages.
 #####  --bot-chatid
