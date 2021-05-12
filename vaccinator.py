@@ -354,5 +354,5 @@ if __name__ == "__main__":
     try:
         main()
     except KeyboardInterrupt:
-        print('\nUser Aborted')
+        print('\nUser Aborted\nExiting, please wait...')
         sys.exit()
