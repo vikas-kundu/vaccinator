@@ -231,7 +231,7 @@ class vaccinator:
 ######## Alert functions ########    
 def desktop_notification(data):
     notification.notify(
-        title = "Sample Notification",
+        title = 'vaccinator Slots Found!',
         message = data,
         timeout = 10
         )
