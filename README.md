@@ -32,11 +32,23 @@ cd vaccinator
 pip3 install -r requirements.txt
 python3 vaccinator.py -h
 ```
-## Updating:
+## Updating
 ```sh
 cd vaccinator
 git pull
 ```
+
+## Build
+
+You can build your own executables using the Pyinstaller module.
+
+```sh
+cd vaccinator
+pip install pyinstaller
+pyinstaller --hidden-import plyer.platforms.win.notification --onefile vaccinator.py
+```
+
+Your executable will now be present inside the dist folder.
 
 ## Usage 
 #### Options:
