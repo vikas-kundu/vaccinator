@@ -18,7 +18,7 @@ Since India has started the vaccination drive for those above 18 years of age, t
 
 ## Tech
 Vaccinator requires Python3 to work and contains only two modules outside the standard python libray which are as follows:
-- py-notifier (0.2.0)
+- plyer (2.0.0)
 - requests (2.25.1)
 
 The data is retrieved using the open public APIs at [API Setu](https://apisetu.gov.in/public/marketplace/api/cowin). It works on both Linux and Windows.
