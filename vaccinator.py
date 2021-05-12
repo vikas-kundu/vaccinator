@@ -42,6 +42,7 @@ from pynotifier import Notification
 # Global vars
 DEBUG = False
 SENT_MAIL_QUEUE = set()
+SENT_TELEGRAM_QUEUE = set()
 SMTP_SERVER = 'danwin1210.me'
 PORT = 587
 SENDER_EMAIL = 'cowininfo-2021@danwin1210.me'
@@ -266,12 +267,12 @@ Subject: Some slots have opened up which are as follows:
         server.quit()
 
 def telegram_bot_sendtext(message):
-    global SENT_MAIL_QUEUE, BOT_TOKEN, BOT_CHAT_ID
-    if message in SENT_MAIL_QUEUE:
+    global SENT_TELEGRAM_QUEUE, BOT_TOKEN, BOT_CHAT_ID
+    if message in SENT_TELEGRAM_QUEUE:
         error('This Telegram message is already sent so skipping it')
         return ''
     else:
-        SENT_MAIL_QUEUE.add(message)
+        SENT_TELEGRAM_QUEUE.add(message)
     send_text = f"https://api.telegram.org/bot{BOT_TOKEN}/sendMessage?chat_id={BOT_CHAT_ID}&parse_mode=Markdown&text={message}"
     try:
         res = r.get(send_text)
